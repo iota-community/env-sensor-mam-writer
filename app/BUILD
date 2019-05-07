@@ -7,6 +7,7 @@ cc_binary(
         "//encode:encode",
         "//logging:logging",
         "//proto_compiled:proto_compiled",
+        "@nanopb//:nanopb",
     ],
     copts = ["-DLOGGER_ENABLE"],
     linkopts = ["-pthread"],

@@ -21,7 +21,7 @@
 
 #define DATA_SIZE 100
 #define SOCKET_BUFFER_SIZE 1024
-#DEBUG_SERVER true
+#define DEBUG_SERVER true
 
 typedef enum {
     FEATURE_REQUEST_CMD, DATA_REQUEST_CMD, DATA_RESPONSE_CMD,
@@ -59,22 +59,7 @@ typedef struct {
 
 #define SENSOR_NODES_LENGTH 1
 
-sensor_node_t sensor_nodes[SENSOR_NODES_LENGTH] = {
-        {
-            .config = {
-                    .address = {
-                            .sin6_addr = {
-                                    0xfe, 0x80, 0x00, 0x00,
-                                    0x00, 0x00, 0x00, 0x00,
-                                    0x02, 0x13, 0xaf, 0xff,
-                                    0xfe, 0x94, 0x0d, 0x75
-                                    },
-                            .sin6_scope_id = 0x20,
-                            .sin6_port = 51037
-                    }
-            },
-        }
-};
+sensor_node_t sensor_nodes[SENSOR_NODES_LENGTH];
 
 int sock;
 bool client_is_running = true;
@@ -111,6 +96,20 @@ uint8_t get_rpc_command_byte(sensor_command_t command) {
         default:
             return 0;
     }
+}
+
+void init_client(void) {
+    sensor_node_t *node = &sensor_nodes[0];
+    uint8_t address[16] = {
+            0xfe, 0x80, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x02, 0x13, 0xaf, 0xff,
+            0xfe, 0x94, 0x0d, 0x75
+    };
+
+    memcpy(&node->config.address.sin6_addr, address, 16);
+    node->config.address.sin6_scope_id = 0x20;
+    node->config.address.sin6_port = 51037;
 }
 
 void client_stop(void) {
@@ -166,7 +165,7 @@ int get_data_ring_position(env_sensor_data_ring_t *data_ring) {
     int current_index = data_ring->position;
 
     if(current_index + 1 == DATA_SIZE){
-        sensor_nodes[i].data_ring.position = 0;
+        data_ring->position = 0;
         return 0;
     }else{
         data_ring->position = current_index + 1;
@@ -186,10 +185,10 @@ float get_scaled_value(environmentSensors_SingleDataPoint *data_point) {
 void handle_data_response(struct sockaddr_in6 *server_addr_ptr, uint8_t *socket_buffer_ptr, int buffer_length) {
     environmentSensors_DataResponse data_response;
 
-    int decoded_length = env_sensor_data_response_decode(&data_response, socket_buffer_ptr, buffer_length);
+    env_sensor_data_response_decode(&data_response, socket_buffer_ptr, buffer_length);
 
     for(int i = 0; i < SENSOR_NODES_LENGTH; i++) {
-        if(check_ip_address(sensor_nodes[i].config.address.sin6_addr, server_addr_ptr.sin6_addr)) {
+        if(check_ip_address(sensor_nodes[i].config.address.sin6_addr.s6_addr, server_addr_ptr->sin6_addr.s6_addr)) {
             env_sensor_data_t sensor_data = {
                     .humanity = get_scaled_value(&data_response.humanity),
                     .temperature = get_scaled_value(&data_response.temperature),
@@ -207,7 +206,7 @@ void handle_feature_response(struct sockaddr_in6 *server_addr_ptr, uint8_t *sock
     env_sensor_feature_response_decode(&feature_response, socket_buffer_ptr, buffer_length);
 
     for(int i = 0; i < SENSOR_NODES_LENGTH; i++) {
-        if(check_ip_address(sensor_nodes[i].config.address.sin6_addr.s6_addr, server_addr_ptr.sin6_addr.s6_addr)) {
+        if(check_ip_address(sensor_nodes[i].config.address.sin6_addr.s6_addr, server_addr_ptr->sin6_addr.s6_addr)) {
             sensor_nodes[i].features.hasAtmosphericPressure = feature_response.hasAtmosphericPressure;
             sensor_nodes[i].features.hasHumanity = feature_response.hasHumanity;
             sensor_nodes[i].features.hasTemperature = feature_response.hasTemperature;

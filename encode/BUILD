@@ -6,6 +6,8 @@ cc_library(
     hdrs = ["encode.h", "decode.h"],
     deps = [
         "//logging:logging",
+        "@nanopb//:nanopb",
+        "//proto_compiled:proto_compiled",
     ],
     linkopts = ["-pthread"],
 )

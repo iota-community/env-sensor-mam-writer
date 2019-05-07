@@ -1,3 +1,12 @@
+#include <stdbool.h>
+
+#include "pb_common.h"
+#include "pb_decode.h"
+#include "pb_encode.h"
+#include "proto_compiled/DataResponse.pb.h"
+#include "proto_compiled/DataRequest.pb.h"
+#include "proto_compiled/FeatureResponse.pb.h"
+
 void log_env_sensor_data_request(char *level, char *func_name, bool decode_status,
                                  environmentSensors_DataRequest *message_ptr);
 

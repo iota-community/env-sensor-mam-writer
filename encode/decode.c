@@ -3,8 +3,8 @@
 
 #include "logging/logging.h"
 
-#include "nanopb/pb_common.h"
-#include "nanopb/pb_decode.h"
+#include "pb_common.h"
+#include "pb_decode.h"
 
 #include "proto_compiled/DataRequest.pb.h"
 #include "proto_compiled/DataResponse.pb.h"
