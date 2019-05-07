@@ -1,3 +1,5 @@
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
+
 git_repository(
     name = "entangled",
     commit = "f0ab6522942ff02bc95f84d37ca1bd2a0a267dfe",
@@ -16,7 +18,5 @@ git_repository(
     remote = "https://github.com/nanopb/nanopb.git",
 )
 
-#load("@rules_iota//:defs.bzl", "iota_deps")
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-
-#iota_deps()
+load("@rules_iota//:defs.bzl", "iota_deps")
+iota_deps()

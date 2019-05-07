@@ -6,6 +6,6 @@ cc_library(
     srcs = ["DataRequest.pb.c", "DataResponse.pb.c", "FeatureResponse.pb.c"],
     hdrs = ["DataRequest.pb.h", "DataResponse.pb.h", "FeatureResponse.pb.h"],
     deps = [
-        "//nanopb:nanopb",
+        "@nanopb//:nanopb",
     ],
 )
