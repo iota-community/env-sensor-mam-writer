@@ -2,21 +2,18 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <stdint.h>
 
-#include "proto_compiled/pb_common.h"
-#include "proto_compiled/pb_encode.h"
+#include "logging/logging.h"
+
+#include "nanopb/pb_common.h"
+#include "nanopb/pb_encode.h"
 
 #include "proto_compiled/DataResponse.pb.h"
 #include "proto_compiled/FeatureResponse.pb.h"
 
 //Todo: Use macros to generate debug code.
 #define DEBUG_ENCODE true
-
-//Logging
-extern void log_int(char *level, char *func_name, char *key, int value);
-extern void log_string(char *level, char *func_name, char *key, char *value);
-extern void log_hex(char *level, char *func_name, char *key, uint8_t value);
-extern void log_hex_array(char *level, char *func_name, char *key, uint8_t *value, size_t length);
 
 void print_encode_result(char * func_name, bool encode_status, size_t encode_message_length){
     printf("DEBUG | %s | Encode status: %u\n", func_name, encode_status);

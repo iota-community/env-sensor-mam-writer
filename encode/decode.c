@@ -1,7 +1,10 @@
 #include <stdio.h>
+#include <stdint.h>
 
-#include "proto_compiled/pb_common.h"
-#include "proto_compiled/pb_decode.h"
+#include "logging/logging.h"
+
+#include "nanopb/pb_common.h"
+#include "nanopb/pb_decode.h"
 
 #include "proto_compiled/DataRequest.pb.h"
 #include "proto_compiled/DataResponse.pb.h"
@@ -9,15 +12,6 @@
 
 //Todo: Use macros to generate debug code.
 #define DEBUG_DECODE true
-
-//Logging
-extern void log_int(char *level, char *func_name, char *key, int value);
-
-extern void log_string(char *level, char *func_name, char *key, char *value);
-
-extern void log_hex(char *level, char *func_name, char *key, uint8_t value);
-
-extern void log_hex_array(char *level, char *func_name, char *key, uint8_t *value, size_t length);
 
 void log_env_sensor_data_request(char *level, char *func_name, bool decode_status,
                                  environmentSensors_DataRequest *message_ptr) {
