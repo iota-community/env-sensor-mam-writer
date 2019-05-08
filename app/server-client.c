@@ -22,6 +22,9 @@
 #define DATA_SIZE 100
 #define SOCKET_BUFFER_SIZE 1024
 #define DEBUG_SERVER true
+#define PORT 8085
+
+#define CLIENT_ADDRESS { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1a, 0x7d, 0xff, 0xfe, 0xda, 0x71, 0x13 }
 
 typedef enum {
     FEATURE_REQUEST_CMD, DATA_REQUEST_CMD, DATA_RESPONSE_CMD,
@@ -98,7 +101,8 @@ uint8_t get_rpc_command_byte(sensor_command_t command) {
     }
 }
 
-void init_client(void) {
+struct sockaddr_in6 client_addr;
+void init_sensor_config(void) {
     sensor_node_t *node = &sensor_nodes[0];
     uint8_t address[16] = {
             0xfe, 0x80, 0x00, 0x00,
@@ -110,6 +114,33 @@ void init_client(void) {
     memcpy(&node->config.address.sin6_addr, address, 16);
     node->config.address.sin6_scope_id = 0x20;
     node->config.address.sin6_port = 51037;
+}
+
+
+void init_client(void) {
+    unsigned int client_addr_len = sizeof(struct sockaddr_in6);
+    memset(&client_addr, 0, client_addr_len);
+    client_addr.sin6_family = AF_INET6;
+    client_addr.sin6_port = htons(PORT);
+    client_addr.sin6_scope_id = 0x20;
+    uint8_t address[16] = CLIENT_ADDRESS;
+
+    memcpy(&client_addr.sin6_addr, address, 16);
+
+    if (DEBUG_SERVER) {
+        log_addr("DEBUG", "client_init", "client_addr", &client_addr);
+        log_int("DEBUG", "client_init", "client_port", ntohs(client_addr.sin6_port));
+    }
+
+    if ((sock = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {
+        log_int("ERROR", "client_init", "server_socket", sock);
+    }
+
+    if (bind(sock, (struct sockaddr *) &client_addr, client_addr_len) < 0) {
+        log_string("ERROR", "client_init", "bind_client_socket", "bind failed");
+    }
+
+    init_sensor_config();
 }
 
 void client_stop(void) {
@@ -245,16 +276,15 @@ void handle_incoming_message(
 }
 
 void start_listening(void) {
-    unsigned int server_addr_len = sizeof(struct sockaddr_in6);
-    struct sockaddr_in6 server_addr;
+    unsigned int client_addr_len = sizeof(struct sockaddr_in6);
     int socket_buffer_length;
 
     uint8_t socket_buffer[SOCKET_BUFFER_SIZE];
 
     while (client_is_running) {
-        int length = recvfrom(sock, socket_buffer, sizeof(socket_buffer) - 1, 0,
-                              (struct sockaddr *) &server_addr,
-                              &server_addr_len);
+        int length = recvfrom(sock, socket_buffer, SOCKET_BUFFER_SIZE - 1, 0,
+                              (struct sockaddr *) &client_addr,
+                              &client_addr_len);
 
         if (length < 0) {
             log_int("ERROR", "server_start_listening", "recvfrom", length);
@@ -264,7 +294,7 @@ void start_listening(void) {
         socket_buffer_length = length;
 
         if (client_is_running) {
-            handle_incoming_message(sock, &server_addr, socket_buffer, socket_buffer_length);
+            handle_incoming_message(sock, &client_addr, socket_buffer, socket_buffer_length);
         } else {
             clear_socket_buffer(socket_buffer);
         }
@@ -310,10 +340,13 @@ void *run_send_thread(void *args) {
 pthread_t send_thread;
 pthread_t listing_thread;
 int main(void){
+    init_client();
     if (listing_thread > 0) {
         puts("Server is already running.");
     } else {
         listing_thread = pthread_create(&listing_thread, NULL, &run_receiver_thread, NULL);
+        send_thread = pthread_create(&send_thread, NULL, &run_send_thread, NULL);
     }
+    while(client_is_running){}
     return 0;
 }
