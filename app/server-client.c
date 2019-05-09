@@ -19,12 +19,19 @@
 #include "proto_compiled/DataRequest.pb.h"
 #include "proto_compiled/FeatureResponse.pb.h"
 
+//tmp
+#include <errno.h>
+
 #define DATA_SIZE 100
 #define SOCKET_BUFFER_SIZE 1024
 #define DEBUG_SERVER true
 #define PORT 8085
 
-#define CLIENT_ADDRESS { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1a, 0x7d, 0xff, 0xfe, 0xda, 0x71, 0x13 }
+//USB Stick
+//#define CLIENT_ADDRESS { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1a, 0x7d, 0xff, 0xfe, 0xda, 0x71, 0x13 }
+
+// Integrated BLE
+#define CLIENT_ADDRESS { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf2, 0xd5, 0xbf, 0xff, 0xfe, 0x10, 0xf1, 0xb1 };
 
 typedef enum {
     FEATURE_REQUEST_CMD, DATA_REQUEST_CMD, DATA_RESPONSE_CMD,
@@ -101,7 +108,7 @@ uint8_t get_rpc_command_byte(sensor_command_t command) {
     }
 }
 
-struct sockaddr_in6 client_addr;
+
 void init_sensor_config(void) {
     sensor_node_t *node = &sensor_nodes[0];
     uint8_t address[16] = {
@@ -112,17 +119,17 @@ void init_sensor_config(void) {
     };
 
     memcpy(&node->config.address.sin6_addr, address, 16);
-    node->config.address.sin6_scope_id = 0x20;
+    node->config.address.sin6_scope_id = 9;
     node->config.address.sin6_port = 51037;
 }
 
-
+struct sockaddr_in6 client_addr;
 void init_client(void) {
-    unsigned int client_addr_len = sizeof(struct sockaddr_in6);
+    unsigned int client_addr_len = sizeof(client_addr);
     memset(&client_addr, 0, client_addr_len);
     client_addr.sin6_family = AF_INET6;
     client_addr.sin6_port = htons(PORT);
-    client_addr.sin6_scope_id = 0x20;
+    client_addr.sin6_scope_id = 9;
     uint8_t address[16] = CLIENT_ADDRESS;
 
     memcpy(&client_addr.sin6_addr, address, 16);
@@ -130,6 +137,7 @@ void init_client(void) {
     if (DEBUG_SERVER) {
         log_addr("DEBUG", "client_init", "client_addr", &client_addr);
         log_int("DEBUG", "client_init", "client_port", ntohs(client_addr.sin6_port));
+        log_hex("DEBUG", "client_init", "client_scope_id", client_addr.sin6_scope_id);
     }
 
     if ((sock = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) {
@@ -138,6 +146,8 @@ void init_client(void) {
 
     if (bind(sock, (struct sockaddr *) &client_addr, client_addr_len) < 0) {
         log_string("ERROR", "client_init", "bind_client_socket", "bind failed");
+        fprintf(stderr, "socket() failed: %s\n", strerror(errno));
+        exit(1);
     }
 
     init_sensor_config();
@@ -151,9 +161,10 @@ void clear_socket_buffer(uint8_t *socket_buffer){
     memset(socket_buffer, 0, SOCKET_BUFFER_SIZE);
 }
 
-void send_buffer(
-        int sock, struct sockaddr_in6 *server_addr_ptr, uint8_t *encode_buffer, int encode_buffer_length) {
+void send_buffer(struct sockaddr_in6 *server_addr_ptr, uint8_t *encode_buffer, int encode_buffer_length) {
     if (DEBUG_SERVER) {
+        log_int("DEBUG", "send_command", "command", encode_buffer[0]);
+        log_int("DEBUG", "send_command", "buffer_length", encode_buffer_length);
         log_addr("DEBUG", "send_command", "server_addr", server_addr_ptr);
     }
 
@@ -314,15 +325,15 @@ void start_sending(void) {
     uint8_t command = get_rpc_command_byte(FEATURE_REQUEST_CMD);
     for(int i = 0; i < SENSOR_NODES_LENGTH; i++) {
         struct sockaddr_in6 * address = &sensor_nodes[i].config.address;
-        send_buffer(sock, address, &command, 1);
+        send_buffer(address, &command, 1);
     }
 
     command = get_rpc_command_byte(DATA_REQUEST_CMD);
     while(client_is_running){
-        sleep(10);
+        sleep(5);
         for(int i = 0; i < SENSOR_NODES_LENGTH; i++) {
             struct sockaddr_in6 *address = &sensor_nodes[i].config.address;
-            send_buffer(sock, address, &command, 1);
+            send_buffer(address, &command, 1);
         }
     }
 }
