@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-#include "mam/examples/send-common.h"
+#include "send-common.h"
 
 retcode_t mam_example_announce_new_channel(mam_api_t* const api, tryte_t const* const channel_id,
                                            bundle_transactions_t* const bundle, trit_t* const msg_id,
@@ -144,7 +144,7 @@ retcode_t mam_example_write_header_on_endpoint(mam_api_t* const api, tryte_t con
 }
 
 retcode_t mam_example_write_packet(mam_api_t* const api, bundle_transactions_t* const bundle, char const* const payload,
-                                   trit_t const* const msg_id, bool is_last_packet) {
+                                   size_t payload_size, trit_t const* const msg_id, bool is_last_packet) {
   retcode_t ret = RC_OK;
   tryte_t* payload_trytes = (tryte_t*)malloc(2 * strlen(payload) * sizeof(tryte_t));
 

@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-#include "mam/examples/send-common.h"
+#include "send-common.h"
 
 int main(int ac, char **av) {
   mam_api_t api;

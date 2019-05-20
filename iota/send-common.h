@@ -11,7 +11,7 @@
 #ifndef __MAM_EXAMPLES_SEND_COMMON_H__
 #define __MAM_EXAMPLES_SEND_COMMON_H__
 
-#include "mam/examples/common.h"
+#include "common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,7 +89,7 @@ retcode_t mam_example_write_header_on_endpoint(mam_api_t* const api, tryte_t con
  * @return return code
  */
 retcode_t mam_example_write_packet(mam_api_t* const api, bundle_transactions_t* const bundle, char const* const payload,
-                                   trit_t const* const msg_id, bool is_last_packet);
+                                   size_t payload_size, trit_t const* const msg_id, bool is_last_packet);
 
 #ifdef __cplusplus
 }

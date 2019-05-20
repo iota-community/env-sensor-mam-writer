@@ -18,6 +18,28 @@ void log_env_sensor_data_request(char *level, char *func_name, bool decode_statu
     log_int(level, func_name, "decode_status", decode_status);
     log_int(level, func_name, "message_ptr->atmosphericPressure", message_ptr->atmosphericPressure);
     log_int(level, func_name, "message_ptr->humanity", message_ptr->humanity);
+    log_int(level, func_name, "message_ptr->humanity", message_ptr->temperature);
+}
+
+void log_env_sensor_data_response(char *level, char *func_name, bool decode_status,
+                                  environmentSensors_DataResponse *message_ptr) {
+    log_int(level, func_name, "decode_status", decode_status);
+    log_int(level, func_name, "message_ptr->has_atmosphericPressure", message_ptr->has_atmosphericPressure);
+    log_int(level, func_name, "message_ptr->has_humanity", message_ptr->has_humanity);
+    log_int(level, func_name, "message_ptr->hasTemperature", message_ptr->has_temperature);
+
+    if(message_ptr->has_atmosphericPressure){
+        log_int(level, func_name, "message_ptr->atmosphericPressure.value", message_ptr->atmosphericPressure.value);
+        log_int(level, func_name, "message_ptr->atmosphericPressure.scale", message_ptr->atmosphericPressure.scale);
+    }
+    if(message_ptr->has_humanity){
+        log_int(level, func_name, "message_ptr->humanity.value", message_ptr->humanity.value);
+        log_int(level, func_name, "message_ptr->humanity.scale", message_ptr->humanity.scale);
+    }
+    if(message_ptr->has_temperature){
+        log_int(level, func_name, "message_ptr->temperature.value", message_ptr->temperature.value);
+        log_int(level, func_name, "message_ptr->temperature.scale", message_ptr->temperature.scale);
+    }
 }
 
 int env_sensor_feature_response_decode(
@@ -54,7 +76,7 @@ int env_sensor_data_response_decode(
     bool decode_status = pb_decode(&stream, environmentSensors_DataResponse_fields, message_ptr);
 
     if (DEBUG_DECODE) {
-        log_env_sensor_data_request("DEBUG", "env_sensor_data_request_decode", decode_status, message_ptr);
+        log_env_sensor_data_response("DEBUG", "env_sensor_data_response_decode", decode_status, message_ptr);
     }
     if (!decode_status) {
         printf("Decoding failed: %s\n", PB_GET_ERROR(&stream));

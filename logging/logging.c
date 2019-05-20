@@ -1,8 +1,13 @@
 #include <stdio.h>
 #include <netinet/in.h>
+#include "sensor/sensor.h"
 
 void log_int(char *level, char *func_name, char *key, int value) {
     printf("%s | %s | int | %s: %i\n", level, func_name, key, value);
+}
+
+void log_float(char *level, char *func_name, char *key, float value) {
+    printf("%s | %s | int | %s: %f\n", level, func_name, key, value);
 }
 
 void log_string(char *level, char *func_name, char *key, char *value) {
@@ -11,6 +16,23 @@ void log_string(char *level, char *func_name, char *key, char *value) {
 
 void log_hex(char *level, char *func_name, char *key, uint8_t value) {
     printf("%s | %s | hex | %s: 0x%x\n", level, func_name, key, value);
+}
+
+void log_sensor_features(char *level, char *func_name, char *key, env_sensor_features_t *sensor_features){
+    printf(
+            "%s | %s | sensor_features | %s | [ hasTemperature: %i, hasHumanity: %i, hasAtmosphericPressure: %i, has2_5: %i ]\n",
+            level, func_name, key, sensor_features->hasTemperature,
+            sensor_features->hasHumanity, sensor_features->hasAtmosphericPressure,
+            sensor_features->has2_5
+            );
+}
+
+void log_sensor_data(char *level, char *func_name, char *key, env_sensor_data_t *sensor_data){
+    printf(
+            "%s | %s | sensor_data | %s | [ temperature: %f, humanity: %f, atomicPressure: %f, pm2_5: %f ]\n",
+            level, func_name, key, sensor_data->temperature, sensor_data->humanity,
+            sensor_data->atmosphericPressure, sensor_data->pm2_5
+            );
 }
 
 void log_hex_array(char *level, char *func_name, char *key, uint8_t *value, size_t length) {

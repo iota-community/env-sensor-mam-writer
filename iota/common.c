@@ -8,7 +8,7 @@
  * Refer to the LICENSE file for licensing information
  */
 
-#include "mam/examples/common.h"
+#include "common.h"
 #include "mam/mam/mam_channel_t_set.h"
 
 mam_psk_t const psk = {

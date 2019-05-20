@@ -4,5 +4,6 @@ cc_library(
     name = "logging",
     srcs = ["logging.c"],
     hdrs = ["logging.h"],
+    deps = ["//sensor:sensor"],
     linkopts = ["-pthread"],
 )

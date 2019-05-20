@@ -10,27 +10,19 @@
 
 #include <stdio.h>
 
-#include "mam/examples/send-common.h"
+#include "send-common.h"
 
-int main(int ac, char **av) {
+int mam_send_message(char *host, int port, char *seed, char *payload, size_t payload_size, bool last_packet) {
   mam_api_t api;
   bundle_transactions_t *bundle = NULL;
   tryte_t channel_id[MAM_CHANNEL_ID_SIZE];
   retcode_t ret = RC_OK;
 
-  if (ac != 6) {
-    fprintf(stderr, "usage: send-msg <host> <port> <seed> <payload> <last_packet>\n");
-    return EXIT_FAILURE;
-  }
 
-  if (strcmp(av[5], "yes") && strcmp(av[5], "no")) {
-    fprintf(stderr, "Arg <last_packet> should be \"yes\" or \"no\" only\n");
-    return EXIT_FAILURE;
-  }
 
   // Loading or creating MAM API
   if ((ret = mam_api_load(MAM_FILE, &api)) == RC_UTILS_FAILED_TO_OPEN_FILE) {
-    if ((ret = mam_api_init(&api, (tryte_t *)av[3])) != RC_OK) {
+    if ((ret = mam_api_init(&api, (tryte_t *)seed)) != RC_OK) {
       fprintf(stderr, "mam_api_init failed with err %d\n", ret);
       return EXIT_FAILURE;
     }
@@ -56,9 +48,6 @@ int main(int ac, char **av) {
       return EXIT_FAILURE;
     }
 
-    // Writing packet to bundle
-    bool last_packet = strcmp(av[5], "yes") == 0;
-
     // if (mam_channel_num_remaining_sks(channel) == 0) {
     // TODO
     // - remove old ch
@@ -68,14 +57,14 @@ int main(int ac, char **av) {
     //   return RC_OK;
     // }
 
-    if ((ret = mam_example_write_packet(&api, bundle, av[4], msg_id, last_packet)) != RC_OK) {
+    if ((ret = mam_example_write_packet(&api, bundle, payload, payload_size, msg_id, last_packet)) != RC_OK) {
       fprintf(stderr, "mam_example_write_packet failed with err %d\n", ret);
       return EXIT_FAILURE;
     }
   }
 
   // Sending bundle
-  if ((ret = send_bundle(av[1], atoi(av[2]), bundle)) != RC_OK) {
+  if ((ret = send_bundle(host, port, bundle)) != RC_OK) {
     fprintf(stderr, "send_bundle failed with err %d\n", ret);
     return EXIT_FAILURE;
   }

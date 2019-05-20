@@ -1,9 +1,11 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/socket.h>
+#include <net/if.h>
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <math.h>
 
 #include "pthread.h"
 #include <unistd.h>
@@ -11,6 +13,8 @@
 #include "encode/decode.h"
 #include "encode/encode.h"
 #include "logging/logging.h"
+
+#include "iota/send-msg.h"
 
 #include "pb_common.h"
 #include "pb_decode.h"
@@ -22,50 +26,22 @@
 //tmp
 #include <errno.h>
 
-#define DATA_SIZE 100
+#define IOTA_HOST "node05.iotatoken.nl"
+#define IOTA_PORT 16265
+#define IOTA_SEED "RTYNARMDLBLMOWRFCEEFMJFFLCTAHWEBKSPJQGHMHCSQPVUI9NDZMJITSGAZOGRGHGZRKSPCPWAWTVPXA"
+
+
 #define SOCKET_BUFFER_SIZE 1024
 #define DEBUG_SERVER true
 #define PORT 8085
 
+#define MAM_ENCODE_BUFFER 2048
+
 //USB Stick
-//#define CLIENT_ADDRESS { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1a, 0x7d, 0xff, 0xfe, 0xda, 0x71, 0x13 }
+#define CLIENT_ADDRESS { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1a, 0x7d, 0xff, 0xfe, 0xda, 0x71, 0x13 }
 
 // Integrated BLE
-#define CLIENT_ADDRESS { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf2, 0xd5, 0xbf, 0xff, 0xfe, 0x10, 0xf1, 0xb1 };
-
-typedef enum {
-    FEATURE_REQUEST_CMD, DATA_REQUEST_CMD, DATA_RESPONSE_CMD,
-    FEATURE_RESPONSE_CMD, SETUP_TEST_CMD, NO_CMD,
-} sensor_command_t;
-
-typedef struct {
-    float temperature;
-    float humanity;
-    float atomicPressure;
-    float pm2_5;
-} env_sensor_data_t;
-
-typedef struct {
-    env_sensor_data_t data[DATA_SIZE];
-    int position;
-} env_sensor_data_ring_t;
-
-typedef struct {
-    bool hasTemperature;
-    bool hasHumanity;
-    bool hasAtmosphericPressure;
-    bool has2_5;
-} env_sensor_features_t;
-
-typedef struct {
-    struct sockaddr_in6 address;
-} sensor_config_t;
-
-typedef struct {
-    sensor_config_t config;
-    env_sensor_features_t features;
-    env_sensor_data_ring_t data_ring;
-} sensor_node_t;
+//#define CLIENT_ADDRESS { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf2, 0xd5, 0xbf, 0xff, 0xfe, 0x10, 0xf1, 0xb1 };
 
 #define SENSOR_NODES_LENGTH 1
 
@@ -119,8 +95,9 @@ void init_sensor_config(void) {
     };
 
     memcpy(&node->config.address.sin6_addr, address, 16);
-    node->config.address.sin6_scope_id = 9;
-    node->config.address.sin6_port = 51037;
+    node->config.address.sin6_family = AF_INET6;
+    node->config.address.sin6_scope_id = 0x00;
+    node->config.address.sin6_port = htons(51037);
 }
 
 struct sockaddr_in6 client_addr;
@@ -129,7 +106,7 @@ void init_client(void) {
     memset(&client_addr, 0, client_addr_len);
     client_addr.sin6_family = AF_INET6;
     client_addr.sin6_port = htons(PORT);
-    client_addr.sin6_scope_id = 9;
+    client_addr.sin6_scope_id = if_nametoindex("bt0");
     uint8_t address[16] = CLIENT_ADDRESS;
 
     memcpy(&client_addr.sin6_addr, address, 16);
@@ -166,6 +143,7 @@ void send_buffer(struct sockaddr_in6 *server_addr_ptr, uint8_t *encode_buffer, i
         log_int("DEBUG", "send_command", "command", encode_buffer[0]);
         log_int("DEBUG", "send_command", "buffer_length", encode_buffer_length);
         log_addr("DEBUG", "send_command", "server_addr", server_addr_ptr);
+        log_int("DEBUG", "send_command", "server_port", ntohs(server_addr_ptr->sin6_port));
     }
 
     sendto(
@@ -176,19 +154,20 @@ void send_buffer(struct sockaddr_in6 *server_addr_ptr, uint8_t *encode_buffer, i
 int get_env_sensor_rpc_command_name(char *result, sensor_command_t command) {
     switch (command) {
         case FEATURE_REQUEST_CMD:
-            strcat(result, "FEATURE_REQUEST_CMD");
+            strcat(result, "FEATURE_REQUEST_CMD\0");
             break;
         case DATA_REQUEST_CMD:
-            strcat(result, "DATA_REQUEST_CMD");
+            strcat(result, "DATA_REQUEST_CMD\0");
             break;
         case DATA_RESPONSE_CMD:
-            strcat(result, "DATA_RESPONSE_CMD");
+            strcat(result, "DATA_RESPONSE_CMD\0");
             break;
         case FEATURE_RESPONSE_CMD:
-            strcat(result, "DATA_RESPONSE_CMD");
+            strcat(result, "DATA_RESPONSE_CMD\0");
             break;
         default:
-            strcat(result, "NONE_CMD");
+            strcat(result, "NONE_CMD\0");
+            break;
     }
 
     return 0;
@@ -203,25 +182,42 @@ bool check_ip_address(uint8_t *ip_address, uint8_t *ip_address_to_match) {
     return true;
 }
 
+float get_scaled_value(environmentSensors_SingleDataPoint *data_point) {
+    if(data_point->value == 0){
+        return 0;
+    }else{
+        return data_point->value / pow(10, -data_point->scale);
+    }
+}
+
 int get_data_ring_position(env_sensor_data_ring_t *data_ring) {
     int current_index = data_ring->position;
 
-    if(current_index + 1 == DATA_SIZE){
+    if(current_index == DATA_SIZE){
         data_ring->position = 0;
         return 0;
     }else{
         data_ring->position = current_index + 1;
-        return data_ring->position;
+        return current_index;
     }
 }
 
 void add_to_data_ring(env_sensor_data_ring_t *data_ring, env_sensor_data_t *sensor_data) {
     int position = get_data_ring_position(data_ring);
-    memcpy(data_ring->data + position, sensor_data, sizeof(env_sensor_data_t));
+    if(DEBUG_SERVER){
+        log_int("DEBUG", "add_to_data_ring", "position", position);
+        log_sensor_data("DEBUG", "add_to_data_ring", "sensor_data", sensor_data);
+    }
+    //log_int("DEBUG", "add_", "temperature", get_scaled_value(&data_ring->data[0]));
+    memcpy(&data_ring->data[position], sensor_data, sizeof(env_sensor_data_t));
 }
 
-float get_scaled_value(environmentSensors_SingleDataPoint *data_point) {
-    return data_point->value / data_point->scale;
+uint8_t mam_encode_buffer[MAM_ENCODE_BUFFER];
+void send_to_tangle(environmentSensors_DataResponse *data_response){
+    env_sensor_data_response_encode(&mam_encode_buffer, MAM_ENCODE_BUFFER, data_response);
+    size_t encoded_size = mam_send_message(IOTA_HOST, IOTA_PORT, IOTA_SEED, &mam_encode_buffer, encoded_size, true);
+    //char test[] = "asfsdfsadf";
+    //mam_send_message(IOTA_HOST, IOTA_PORT, IOTA_SEED, test, strlen(test), true);
 }
 
 void handle_data_response(struct sockaddr_in6 *server_addr_ptr, uint8_t *socket_buffer_ptr, int buffer_length) {
@@ -231,12 +227,17 @@ void handle_data_response(struct sockaddr_in6 *server_addr_ptr, uint8_t *socket_
 
     for(int i = 0; i < SENSOR_NODES_LENGTH; i++) {
         if(check_ip_address(sensor_nodes[i].config.address.sin6_addr.s6_addr, server_addr_ptr->sin6_addr.s6_addr)) {
+            if(DEBUG_SERVER){
+                log_float("DEBUG", "handle_data_response", "temperature", get_scaled_value(&data_response.temperature));
+            }
+
             env_sensor_data_t sensor_data = {
                     .humanity = get_scaled_value(&data_response.humanity),
                     .temperature = get_scaled_value(&data_response.temperature),
                     .pm2_5 = get_scaled_value(&data_response.pm2_5),
-                    .atomicPressure = get_scaled_value(&data_response.atmosphericPressure),
+                    .atmosphericPressure = get_scaled_value(&data_response.atmosphericPressure),
                     };
+            send_to_tangle(&data_response);
             add_to_data_ring(&sensor_nodes[i].data_ring, &sensor_data);
         }
     }
@@ -266,7 +267,8 @@ void handle_incoming_message(
 
     if (DEBUG_SERVER) {
         log_hex("DEBUG", func_name, "hex_command", (uint8_t) socket_buffer_ptr[0]);
-        char command_name[30];
+        char command_name[20];
+        memset(command_name, 0, 20);
         get_env_sensor_rpc_command_name(command_name, command);
         log_string("DEBUG", func_name, "command_name", command_name);
         log_int("DEBUG", func_name, "server_port", ntohs(server_addr_ptr->sin6_port));
@@ -347,7 +349,37 @@ void *run_send_thread(void *args) {
     pthread_exit(&value);
 }
 
+void node_status_report(sensor_node_t *node){
+    char func_name[] = "node_status_report";
+    char level[] = "DEBUG";
+    if(DEBUG_SERVER){
+        log_addr(level, func_name, "sensor_address", &node->config.address);
+    }
 
+    for(int i = 0; i < DATA_SIZE;i++){
+        log_sensor_data(level, func_name, "sensor_data", &node->data_ring.data[i]);
+    }
+}
+
+void start_status_report(void) {
+    while(client_is_running){
+        sleep(10);
+        for(int i = 0; i < SENSOR_NODES_LENGTH; i++) {
+            node_status_report(&sensor_nodes[i]);
+        }
+    }
+}
+
+void *run_status_thread(void *args) {
+    (void) args;
+
+    start_status_report();
+    int value = 0;
+    close(sock);
+    pthread_exit(&value);
+}
+
+pthread_t status_thread;
 pthread_t send_thread;
 pthread_t listing_thread;
 int main(void){
@@ -357,6 +389,7 @@ int main(void){
     } else {
         listing_thread = pthread_create(&listing_thread, NULL, &run_receiver_thread, NULL);
         send_thread = pthread_create(&send_thread, NULL, &run_send_thread, NULL);
+        status_thread = pthread_create(&status_thread, NULL, &run_status_thread, NULL);
     }
     while(client_is_running){}
     return 0;
