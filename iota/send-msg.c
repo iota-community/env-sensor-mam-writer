@@ -18,8 +18,6 @@ int mam_send_message(char *host, int port, char *seed, char *payload, size_t pay
   tryte_t channel_id[MAM_CHANNEL_ID_SIZE];
   retcode_t ret = RC_OK;
 
-
-
   // Loading or creating MAM API
   if ((ret = mam_api_load(MAM_FILE, &api)) == RC_UTILS_FAILED_TO_OPEN_FILE) {
     if ((ret = mam_api_init(&api, (tryte_t *)seed)) != RC_OK) {

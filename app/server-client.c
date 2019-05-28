@@ -220,9 +220,9 @@ void clear_mam_buffer(){
 void send_to_tangle(environmentSensors_DataResponse *data_response) {
     clear_mam_buffer();
     size_t encoded_size = env_sensor_data_response_encode(&mam_encode_buffer, MAM_ENCODE_BUFFER, data_response);
-    mam_encode_buffer[encoded_size + 1] = '\0';
-    log_hex_array("DEBUG", "send_to_tangle", "mam_buffer", &mam_encode_buffer, encoded_size +1);
-    mam_send_message(IOTA_HOST, IOTA_PORT, IOTA_SEED, &mam_encode_buffer, encoded_size +1, true);
+
+    log_hex_array("DEBUG", "send_to_tangle", "mam_buffer", &mam_encode_buffer, encoded_size);
+    mam_send_message(IOTA_HOST, IOTA_PORT, IOTA_SEED, &mam_encode_buffer, encoded_size, true);
 }
 
 void handle_data_response(struct sockaddr_in6 *server_addr_ptr, uint8_t *socket_buffer_ptr, int buffer_length) {

@@ -146,10 +146,19 @@ retcode_t mam_example_write_header_on_endpoint(mam_api_t* const api, tryte_t con
 retcode_t mam_example_write_packet(mam_api_t* const api, bundle_transactions_t* const bundle, char const* const payload,
                                    size_t payload_size, trit_t const* const msg_id, bool is_last_packet) {
   retcode_t ret = RC_OK;
-  tryte_t* payload_trytes = (tryte_t*)malloc(2 * payload_size * sizeof(tryte_t));
+  tryte_t* payload_trytes = (tryte_t*)malloc((payload_size * NUMBER_OF_TRITS_IN_A_BYTE)/3 * sizeof(tryte_t));
 
-  ascii_to_trytes(payload, payload_trytes);
-  if ((ret = mam_api_bundle_write_packet(api, msg_id, payload_trytes, payload_size * 2, 0, is_last_packet,
+  trit_t* payload_trits = (tryte_t*)malloc(payload_size * NUMBER_OF_TRITS_IN_A_BYTE * sizeof(trit_t));
+  bytes_to_trits((byte_t *) payload, payload_size, payload_trits, payload_size * NUMBER_OF_TRITS_IN_A_BYTE);
+
+  trits_to_trytes(payload_trits, payload_trytes, payload_size * NUMBER_OF_TRITS_IN_A_BYTE);
+
+  for (size_t i = 0; i < (payload_size * NUMBER_OF_TRITS_IN_A_BYTE)/3; i++) {
+      fprintf(stderr, "%c", payload_trytes[i]);
+  }
+    fprintf(stderr, "%c", '\n');
+
+  if ((ret = mam_api_bundle_write_packet(api, msg_id, payload_trytes, (payload_size * NUMBER_OF_TRITS_IN_A_BYTE)/3, 0, is_last_packet,
                                          bundle)) != RC_OK) {
     return ret;
   }
