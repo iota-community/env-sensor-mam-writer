@@ -313,7 +313,7 @@ void write_data_response_to_buffer(char * buffer, environmentSensors_DataRespons
         char second[] = ", \"hasHumidity\": \"true\" ";
         strcat(buffer, second);
 
-        write_temperature_to_buffer(buffer, &data_response->temperature);
+        write_humidity_to_buffer(buffer, &data_response->temperature);
     }else{
         char second[] = ", \"hasHumidity\": \"false\" ";
         strcat(buffer, second);
@@ -323,7 +323,7 @@ void write_data_response_to_buffer(char * buffer, environmentSensors_DataRespons
         char third[] = ", \"hasAtmosphericPressure\": \"true\" ";
         strcat(buffer, third);
 
-        write_temperature_to_buffer(buffer, &data_response->temperature);
+        write_atmosphericPressure_to_buffer(buffer, &data_response->temperature);
     }else{
         char third[] = ", \"hasAtmosphericPressure\": \"false\" ";
         strcat(buffer, third);
@@ -333,7 +333,7 @@ void write_data_response_to_buffer(char * buffer, environmentSensors_DataRespons
         char fourth[] = ", \"hasPm2_5\": \"true\" ";
         strcat(buffer, fourth);
 
-        write_temperature_to_buffer(buffer, &data_response->temperature);
+        write_pm2_5_to_buffer(buffer, &data_response->temperature);
     }else{
         char fourth[] = ", \"hasPm2_5\": \"false\" ";
         strcat(buffer, fourth);
