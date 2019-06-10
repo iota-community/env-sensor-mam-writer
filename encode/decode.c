@@ -17,24 +17,24 @@ void log_env_sensor_data_request(char *level, char *func_name, bool decode_statu
                                  environmentSensors_DataRequest *message_ptr) {
     log_int(level, func_name, "decode_status", decode_status);
     log_int(level, func_name, "message_ptr->atmosphericPressure", message_ptr->atmosphericPressure);
-    log_int(level, func_name, "message_ptr->humanity", message_ptr->humanity);
-    log_int(level, func_name, "message_ptr->humanity", message_ptr->temperature);
+    log_int(level, func_name, "message_ptr->humidity", message_ptr->humidity);
+    log_int(level, func_name, "message_ptr->humidity", message_ptr->temperature);
 }
 
 void log_env_sensor_data_response(char *level, char *func_name, bool decode_status,
                                   environmentSensors_DataResponse *message_ptr) {
     log_int(level, func_name, "decode_status", decode_status);
     log_int(level, func_name, "message_ptr->has_atmosphericPressure", message_ptr->has_atmosphericPressure);
-    log_int(level, func_name, "message_ptr->has_humanity", message_ptr->has_humanity);
+    log_int(level, func_name, "message_ptr->has_humidity", message_ptr->has_humidity);
     log_int(level, func_name, "message_ptr->hasTemperature", message_ptr->has_temperature);
 
     if(message_ptr->has_atmosphericPressure){
         log_int(level, func_name, "message_ptr->atmosphericPressure.value", message_ptr->atmosphericPressure.value);
         log_int(level, func_name, "message_ptr->atmosphericPressure.scale", message_ptr->atmosphericPressure.scale);
     }
-    if(message_ptr->has_humanity){
-        log_int(level, func_name, "message_ptr->humanity.value", message_ptr->humanity.value);
-        log_int(level, func_name, "message_ptr->humanity.scale", message_ptr->humanity.scale);
+    if(message_ptr->has_humidity){
+        log_int(level, func_name, "message_ptr->humidity.value", message_ptr->humidity.value);
+        log_int(level, func_name, "message_ptr->humidity.scale", message_ptr->humidity.scale);
     }
     if(message_ptr->has_temperature){
         log_int(level, func_name, "message_ptr->temperature.value", message_ptr->temperature.value);

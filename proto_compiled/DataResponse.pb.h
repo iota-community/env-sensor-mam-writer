@@ -25,8 +25,8 @@ typedef struct _environmentSensors_SingleDataPoint {
 typedef struct _environmentSensors_DataResponse {
     bool has_temperature;
     environmentSensors_SingleDataPoint temperature;
-    bool has_humanity;
-    environmentSensors_SingleDataPoint humanity;
+    bool has_humidity;
+    environmentSensors_SingleDataPoint humidity;
     bool has_atmosphericPressure;
     environmentSensors_SingleDataPoint atmosphericPressure;
     bool has_pm2_5;
@@ -45,7 +45,7 @@ typedef struct _environmentSensors_DataResponse {
 #define environmentSensors_SingleDataPoint_value_tag 1
 #define environmentSensors_SingleDataPoint_scale_tag 2
 #define environmentSensors_DataResponse_temperature_tag 1
-#define environmentSensors_DataResponse_humanity_tag 2
+#define environmentSensors_DataResponse_humidity_tag 2
 #define environmentSensors_DataResponse_atmosphericPressure_tag 3
 #define environmentSensors_DataResponse_pm2_5_tag 4
 
@@ -58,13 +58,13 @@ X(a, STATIC, REQUIRED, INT32, scale, 2)
 
 #define environmentSensors_DataResponse_FIELDLIST(X, a) \
 X(a, STATIC, OPTIONAL, MESSAGE, temperature, 1) \
-X(a, STATIC, OPTIONAL, MESSAGE, humanity, 2) \
+X(a, STATIC, OPTIONAL, MESSAGE, humidity, 2) \
 X(a, STATIC, OPTIONAL, MESSAGE, atmosphericPressure, 3) \
 X(a, STATIC, OPTIONAL, MESSAGE, pm2_5, 4)
 #define environmentSensors_DataResponse_CALLBACK NULL
 #define environmentSensors_DataResponse_DEFAULT NULL
 #define environmentSensors_DataResponse_temperature_MSGTYPE environmentSensors_SingleDataPoint
-#define environmentSensors_DataResponse_humanity_MSGTYPE environmentSensors_SingleDataPoint
+#define environmentSensors_DataResponse_humidity_MSGTYPE environmentSensors_SingleDataPoint
 #define environmentSensors_DataResponse_atmosphericPressure_MSGTYPE environmentSensors_SingleDataPoint
 #define environmentSensors_DataResponse_pm2_5_MSGTYPE environmentSensors_SingleDataPoint
 

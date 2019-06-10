@@ -17,7 +17,7 @@ extern "C" {
 /* Struct definitions */
 typedef struct _environmentSensors_DataRequest {
     bool temperature;
-    bool humanity;
+    bool humidity;
     bool atmosphericPressure;
     bool pm2_5;
 /* @@protoc_insertion_point(struct:environmentSensors_DataRequest) */
@@ -30,14 +30,14 @@ typedef struct _environmentSensors_DataRequest {
 
 /* Field tags (for use in manual encoding/decoding) */
 #define environmentSensors_DataRequest_temperature_tag 3
-#define environmentSensors_DataRequest_humanity_tag 4
+#define environmentSensors_DataRequest_humidity_tag 4
 #define environmentSensors_DataRequest_atmosphericPressure_tag 5
 #define environmentSensors_DataRequest_pm2_5_tag 6
 
 /* Struct field encoding specification for nanopb */
 #define environmentSensors_DataRequest_FIELDLIST(X, a) \
 X(a, STATIC, REQUIRED, BOOL, temperature, 3) \
-X(a, STATIC, REQUIRED, BOOL, humanity, 4) \
+X(a, STATIC, REQUIRED, BOOL, humidity, 4) \
 X(a, STATIC, REQUIRED, BOOL, atmosphericPressure, 5) \
 X(a, STATIC, REQUIRED, BOOL, pm2_5, 6)
 #define environmentSensors_DataRequest_CALLBACK NULL

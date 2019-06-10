@@ -17,7 +17,7 @@ extern "C" {
 /* Struct definitions */
 typedef struct _environmentSensors_FeatureResponse {
     bool hasTemperature;
-    bool hasHumanity;
+    bool hasHumidity;
     bool hasAtmosphericPressure;
     bool hasPm2_5;
 /* @@protoc_insertion_point(struct:environmentSensors_FeatureResponse) */
@@ -30,14 +30,14 @@ typedef struct _environmentSensors_FeatureResponse {
 
 /* Field tags (for use in manual encoding/decoding) */
 #define environmentSensors_FeatureResponse_hasTemperature_tag 2
-#define environmentSensors_FeatureResponse_hasHumanity_tag 3
+#define environmentSensors_FeatureResponse_hasHumidity_tag 3
 #define environmentSensors_FeatureResponse_hasAtmosphericPressure_tag 4
 #define environmentSensors_FeatureResponse_hasPm2_5_tag 5
 
 /* Struct field encoding specification for nanopb */
 #define environmentSensors_FeatureResponse_FIELDLIST(X, a) \
 X(a, STATIC, REQUIRED, BOOL, hasTemperature, 2) \
-X(a, STATIC, REQUIRED, BOOL, hasHumanity, 3) \
+X(a, STATIC, REQUIRED, BOOL, hasHumidity, 3) \
 X(a, STATIC, REQUIRED, BOOL, hasAtmosphericPressure, 4) \
 X(a, STATIC, REQUIRED, BOOL, hasPm2_5, 5)
 #define environmentSensors_FeatureResponse_CALLBACK NULL

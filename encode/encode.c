@@ -27,9 +27,9 @@ void debug_env_sensor_data_response(char * func_name, environmentSensors_DataRes
     printf("DEBUG | %s | HasPm2.5: %i\n", func_name, message_ptr->has_pm2_5);
     printf("DEBUG | %s | Pm2.5 value: %i\n", func_name, (int)message_ptr->pm2_5.value);
     printf("DEBUG | %s | Pm2.5 scale: %i\n", func_name, (int)message_ptr->pm2_5.scale);
-    printf("DEBUG | %s | HasHumanity: %i\n", func_name, message_ptr->has_humanity);
-    printf("DEBUG | %s | Humanity value: %i\n", func_name, (int)message_ptr->humanity.value);
-    printf("DEBUG | %s | Humanity scale: %i\n", func_name, (int)message_ptr->humanity.scale);
+    printf("DEBUG | %s | HasHumidity: %i\n", func_name, message_ptr->has_humidity);
+    printf("DEBUG | %s | Humidity value: %i\n", func_name, (int)message_ptr->humidity.value);
+    printf("DEBUG | %s | Humidity scale: %i\n", func_name, (int)message_ptr->humidity.scale);
     printf("DEBUG | %s | HasAtmosphericPressure: %i\n", func_name, message_ptr->has_atmosphericPressure);
     printf("DEBUG | %s | AtmosphericPressure value: %i\n", func_name, (int)message_ptr->atmosphericPressure.value);
     printf("DEBUG | %s | AtmosphericPressure scale: %i\n", func_name, (int)message_ptr->atmosphericPressure.scale);
@@ -61,7 +61,7 @@ size_t env_sensor_data_response_encode(uint8_t *buffer, size_t buffer_size, envi
 void debug_env_sensor_feature_response(char * func_name, environmentSensors_FeatureResponse *message_ptr) {
     printf("DEBUG | %s | HasTemperature: %i\n", func_name, message_ptr->hasTemperature);
     printf("DEBUG | %s | HasPm2.5: %i\n", func_name, message_ptr->hasPm2_5);
-    printf("DEBUG | %s | HasHumanity: %i\n", func_name, message_ptr->hasHumanity);
+    printf("DEBUG | %s | HasHumidity: %i\n", func_name, message_ptr->hasHumidity);
     printf("DEBUG | %s | HasAtmosphericPressure: %i\n", func_name, message_ptr->hasAtmosphericPressure);
 }
 

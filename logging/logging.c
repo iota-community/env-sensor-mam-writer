@@ -20,17 +20,17 @@ void log_hex(char *level, char *func_name, char *key, uint8_t value) {
 
 void log_sensor_features(char *level, char *func_name, char *key, env_sensor_features_t *sensor_features){
     printf(
-            "%s | %s | sensor_features | %s | [ hasTemperature: %i, hasHumanity: %i, hasAtmosphericPressure: %i, has2_5: %i ]\n",
+            "%s | %s | sensor_features | %s | [ hasTemperature: %i, hasHumidity: %i, hasAtmosphericPressure: %i, has2_5: %i ]\n",
             level, func_name, key, sensor_features->hasTemperature,
-            sensor_features->hasHumanity, sensor_features->hasAtmosphericPressure,
+            sensor_features->hasHumidity, sensor_features->hasAtmosphericPressure,
             sensor_features->has2_5
             );
 }
 
 void log_sensor_data(char *level, char *func_name, char *key, env_sensor_data_t *sensor_data){
     printf(
-            "%s | %s | sensor_data | %s | [ temperature: %f, humanity: %f, atomicPressure: %f, pm2_5: %f ]\n",
-            level, func_name, key, sensor_data->temperature, sensor_data->humanity,
+            "%s | %s | sensor_data | %s | [ temperature: %f, humidity: %f, atomicPressure: %f, pm2_5: %f ]\n",
+            level, func_name, key, sensor_data->temperature, sensor_data->humidity,
             sensor_data->atmosphericPressure, sensor_data->pm2_5
             );
 }

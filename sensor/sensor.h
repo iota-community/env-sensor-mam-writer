@@ -11,7 +11,7 @@ typedef enum {
 
 typedef struct {
     float temperature;
-    float humanity;
+    float humidity;
     float atmosphericPressure;
     float pm2_5;
 } env_sensor_data_t;
@@ -23,7 +23,7 @@ typedef struct {
 
 typedef struct {
     bool hasTemperature;
-    bool hasHumanity;
+    bool hasHumidity;
     bool hasAtmosphericPressure;
     bool has2_5;
 } env_sensor_features_t;
