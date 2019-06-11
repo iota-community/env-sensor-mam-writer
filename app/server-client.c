@@ -37,11 +37,14 @@
 
 #define JSON_BUFFER_SIZE 2048
 
+#define INTERFACE_NAME "bt0"
 //USB Stick
 #define CLIENT_ADDRESS { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1a, 0x7d, 0xff, 0xfe, 0xda, 0x71, 0x13 }
 
 // Integrated BLE
 //#define CLIENT_ADDRESS { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf2, 0xd5, 0xbf, 0xff, 0xfe, 0x10, 0xf1, 0xb1 };
+
+#define SENSOR_ADDRESS { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x13, 0xaf, 0xff, 0xfe, 0x94, 0x0d, 0x75 }
 
 #define SENSOR_NODES_LENGTH 1
 
@@ -87,12 +90,7 @@ uint8_t get_rpc_command_byte(sensor_command_t command) {
 
 void init_sensor_config(void) {
     sensor_node_t *node = &sensor_nodes[0];
-    uint8_t address[16] = {
-            0xfe, 0x80, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00,
-            0x02, 0x13, 0xaf, 0xff,
-            0xfe, 0x94, 0x0d, 0x75
-    };
+    uint8_t address[16] = SENSOR_ADDRESS;
 
     memcpy(&node->config.address.sin6_addr, address, 16);
     node->config.address.sin6_family = AF_INET6;
@@ -106,7 +104,7 @@ void init_client(void) {
     memset(&client_addr, 0, client_addr_len);
     client_addr.sin6_family = AF_INET6;
     client_addr.sin6_port = htons(PORT);
-    client_addr.sin6_scope_id = if_nametoindex("bt0");
+    client_addr.sin6_scope_id = if_nametoindex(INTERFACE_NAME);
     uint8_t address[16] = CLIENT_ADDRESS;
 
     memcpy(&client_addr.sin6_addr, address, 16);
@@ -345,7 +343,7 @@ void write_data_response_to_buffer(char * buffer, environmentSensors_DataRespons
 
 void send_to_tangle(environmentSensors_DataResponse *data_response) {
     clear_json_buffer();
-    printf("json_pointer: %i\n", (int)json_buffer);
+
     write_data_response_to_buffer(json_buffer, data_response);
 
     int json_size = strlen(json_buffer);
