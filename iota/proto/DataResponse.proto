@@ -8,7 +8,7 @@ message SingleDataPoint {
 
 message DataResponse {
     optional SingleDataPoint temperature = 1;
-    optional SingleDataPoint humanity = 2;
+    optional SingleDataPoint humidity = 2;
     optional SingleDataPoint atmosphericPressure = 3;
     optional SingleDataPoint pm2_5 = 4;
 }

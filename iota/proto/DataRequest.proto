@@ -3,7 +3,7 @@ package environmentSensors;
 
 message DataRequest {
     required bool temperature = 3;
-    required bool humanity = 4;
+    required bool humidity = 4;
     required bool atmosphericPressure = 5;
     required bool pm2_5 = 6;
 }
